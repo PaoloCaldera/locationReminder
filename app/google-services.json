@@ -14,15 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "944631617675-58gkr423ld0mk0ff5ml3rjplha058dgt.apps.googleusercontent.com",
+          "client_id": "944631617675-8m4j9g4cievpsgchhg4l60j3o94crk60.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.udacity.project4",
-            "certificate_hash": "9651fd415360ee0e842fdd942c8cd91876e12f41"
+            "certificate_hash": "3a851b5e22667c8af70d20ac7fe896db76835a54"
           }
         },
         {
-          "client_id": "944631617675-oaen93ugg1ahk9clcv7ts6ilkt10nv65.apps.googleusercontent.com",
+          "client_id": "944631617675-uqocjr8jmkfg5pfg0m30107fplfg4c0f.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
