@@ -76,6 +76,7 @@ class ReminderListFragment : BaseFragment() {
             R.id.logout -> {
                 // TODO: add the logout implementation
                 AuthUI.getInstance().signOut(requireContext())
+                startActivity(Intent(this.activity, AuthenticationActivity::class.java))
             }
         }
         return super.onOptionsItemSelected(item)
