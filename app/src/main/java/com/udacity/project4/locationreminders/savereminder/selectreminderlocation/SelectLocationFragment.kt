@@ -47,6 +47,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private val ONLY_FOREGROUND_PERMISSION_REQUEST_CODE = 2
     private val TURN_DEVICE_LOCATION_ON_REQUEST_CODE = 3
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -59,10 +60,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
-        // TODO: add the map setup implementation
-        // TODO: zoom to the user location after taking his permission
-        // TODO: add style to the map
-        // TODO: put a marker to location that the user selected
+        //  add the map setup implementation
+        //  zoom to the user location after taking his permission
+        //  add style to the map
+        //  put a marker to location that the user selected
 
         (binding.map as SupportMapFragment).getMapAsync(this)
 
@@ -78,9 +79,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setMapClick(map)
         setMapPoiClick(map)
 
-        enableMyLocation()
+        enablePermissionsAndMoveToLocation()
     }
 
+    /**
+     * Set the style of the map with the map_style.json file in resources folder
+     */
     private fun setMapStyle(map: GoogleMap) {
         try {
             map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style))
@@ -91,6 +95,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Add a marker on the map when the user taps on and save the marker location
+     */
     private fun setMapClick(map: GoogleMap) {
         // Remove all previous markers from the map
         map.clear()
@@ -111,6 +118,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Add a marker to the selected POI and save its location
+     */
     private fun setMapPoiClick(map: GoogleMap) {
         // Remove all previous markers from the app
         map.clear()
@@ -124,6 +134,31 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Make the user enable foreground and background permission if not already granted
+     */
+    @SuppressLint("MissingPermission")
+    private fun enablePermissionsAndMoveToLocation() {
+        if (arePermissionsGranted()) {
+            checkDeviceLocationSettings()
+        } else {
+            var permissionArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            val resultCode =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    permissionArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE
+                } else ONLY_FOREGROUND_PERMISSION_REQUEST_CODE
+            ActivityCompat.requestPermissions(
+                this.requireActivity().parent,
+                permissionArray,
+                resultCode
+            )
+        }
+    }
+
+    /**
+     * Check if foreground and background location permissions are granted
+     */
     private fun arePermissionsGranted(): Boolean {
         val foregroundPermissionApproved =
             (PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(
@@ -141,36 +176,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         return (foregroundPermissionApproved && backgroundPermissionApproved)
     }
 
-    @SuppressLint("MissingPermission")
-    private fun enableMyLocation() {
-        if (arePermissionsGranted()) {
-            checkDeviceLocationSettings()
-            /*map.isMyLocationEnabled = true
-            LocationServices.getFusedLocationProviderClient(requireContext()).lastLocation
-                .addOnSuccessListener {
-                    if (it != null) {
-                        map.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                LatLng(it.latitude, it.longitude), 18f
-                            )
-                        )
-                    }
-                }*/
-        } else {
-            var permissionArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-            val resultCode =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    permissionArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE
-                } else ONLY_FOREGROUND_PERMISSION_REQUEST_CODE
-            ActivityCompat.requestPermissions(
-                this.requireActivity().parent,
-                permissionArray,
-                resultCode
-            )
-        }
-    }
-
+    /**
+     * Handle the result of the permission request: if not granted, go to the settings activity
+     * and make the user grant them
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -200,6 +209,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         } else checkDeviceLocationSettings()
     }
 
+    /**
+     * Check if the device location is turned on: if not, ask the user to turn it on
+     */
     private fun checkDeviceLocationSettings(resolve: Boolean = true) {
         val locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_LOW_POWER
@@ -233,14 +245,36 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             }
         }
         locationSettingsResponseTask.addOnCompleteListener {
-            if (it.isSuccessful) {...}
+            if (it.isSuccessful) {
+                moveToCurrentLocation()
+            }
         }
     }
 
+    /**
+     * Handle the result of the turning-on location request: strongly suggest the user to turn
+     * the device location on
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == TURN_DEVICE_LOCATION_ON_REQUEST_CODE)
             checkDeviceLocationSettings(false)
+    }
+
+    /**
+     * Move to the user current location if all the conditions are met
+     */
+    @SuppressLint("MissingPermission")
+    private fun moveToCurrentLocation() {
+        map.isMyLocationEnabled = true
+        LocationServices.getFusedLocationProviderClient(requireContext()).lastLocation
+            .addOnSuccessListener {
+                if (it != null) {
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        LatLng(it.latitude, it.longitude), 18f
+                    ))
+                }
+            }
     }
 
     /*
