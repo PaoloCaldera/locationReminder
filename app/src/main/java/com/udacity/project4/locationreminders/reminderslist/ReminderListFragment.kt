@@ -26,6 +26,7 @@ import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
+import com.udacity.project4.locationreminders.ReminderDescriptionActivity
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
@@ -93,7 +94,10 @@ class ReminderListFragment : BaseFragment() {
      * Setup the recycler view for the list fragment
      */
     private fun setupRecyclerView() {
-        val adapter = RemindersListAdapter {}
+        val adapter = RemindersListAdapter {
+            val intent = ReminderDescriptionActivity.newIntent(requireContext(), it)
+            startActivity(intent)
+        }
         // Setup the recycler view using the extension function
         binding.reminderssRecyclerView.setup(adapter)
     }

@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -46,6 +47,8 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.reminderDataItem = reminder
         (binding.mapMarker as SupportMapFragment).getMapAsync(this)
         binding.lifecycleOwner = this
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     override fun onMapReady(p0: GoogleMap) {
@@ -55,5 +58,35 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
 
         map.addMarker(MarkerOptions().position(reminderMapLocation).title(reminder.description!!))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(reminderMapLocation, 17f))
+    }
+
+    override fun onBackPressed() {
+        navigateBackToRemindersList()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                navigateBackToRemindersList()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun navigateBackToRemindersList() {
+        // Check if the main activity, RemindersActivity, is already present in the back stack
+        val instance = supportFragmentManager.findFragmentByTag(RemindersActivity::class.java.name)
+
+        if (instance != null && instance.isAdded)
+            // If an instance of RemindersActivity is found, go back by simply popping off this activity
+            supportFragmentManager.popBackStack()
+        else {
+            // In case of notification, no RemindersActivity
+            val intent = Intent(this, RemindersActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
     }
 }
