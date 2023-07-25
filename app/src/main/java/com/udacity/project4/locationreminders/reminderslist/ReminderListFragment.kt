@@ -27,7 +27,6 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
 import com.udacity.project4.locationreminders.ReminderDescriptionActivity
-import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -49,7 +48,7 @@ class ReminderListFragment : BaseFragment() {
         binding.viewModel = _viewModel
 
         setHasOptionsMenu(true)
-        setDisplayHomeAsUpEnabled(false)
+        //setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
         binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
         return binding.root
@@ -66,11 +65,18 @@ class ReminderListFragment : BaseFragment() {
                 enablePermissionsAndDeviceLocation()
         }
 
+
+
         // Navigate to AuthenticationActivity if user is not logged-in
         if (FirebaseAuth.getInstance().currentUser == null) {
-            startActivity(Intent(this.activity, AuthenticationActivity::class.java))
+            val intent = Intent(this.activity, AuthenticationActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
         enablePermissionsAndDeviceLocation()
     }
 
@@ -116,11 +122,7 @@ class ReminderListFragment : BaseFragment() {
                     permissionArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
                     FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE
                 } else ONLY_FOREGROUND_PERMISSION_REQUEST_CODE
-            ActivityCompat.requestPermissions(
-                this.requireActivity().parent,
-                permissionArray,
-                resultCode
-            )
+            requestPermissions(permissionArray,resultCode)
         }
     }
 
@@ -174,7 +176,8 @@ class ReminderListFragment : BaseFragment() {
                     })
                 }
                 .show()
-        } else checkDeviceLocationSettings()
+        } else
+            checkDeviceLocationSettings()
     }
 
     /**
@@ -191,9 +194,10 @@ class ReminderListFragment : BaseFragment() {
         locationSettingsResponseTask.addOnFailureListener {
             if (it is ResolvableApiException && resolve) {
                 try {
-                    it.startResolutionForResult(
-                        requireActivity().parent,
-                        TURN_DEVICE_LOCATION_ON_REQUEST_CODE
+                    startIntentSenderForResult(
+                        it.resolution.intentSender,
+                        TURN_DEVICE_LOCATION_ON_REQUEST_CODE,
+                        null, 0, 0, 0, null
                     )
                 } catch (sendException: IntentSender.SendIntentException) {
                     Toast.makeText(

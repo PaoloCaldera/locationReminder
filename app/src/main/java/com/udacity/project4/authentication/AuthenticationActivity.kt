@@ -1,6 +1,7 @@
 package com.udacity.project4.authentication
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -69,7 +70,9 @@ class AuthenticationActivity : AppCompatActivity() {
     }
 
     private fun exitLogin() {
-        supportFragmentManager.popBackStack(RemindersActivity::class.java.name, 0)
+        val intent = Intent(this, RemindersActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
     }
 
     companion object {

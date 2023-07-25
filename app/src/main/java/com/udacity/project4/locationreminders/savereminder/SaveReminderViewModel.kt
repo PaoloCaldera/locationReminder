@@ -95,7 +95,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     /**
      * On location selected, go back to the SaveReminderFragment
      */
-    fun saveSelectedLocation() {
+    fun backToPreviousFragment() {
         navigationCommand.value = NavigationCommand.Back
     }
 }

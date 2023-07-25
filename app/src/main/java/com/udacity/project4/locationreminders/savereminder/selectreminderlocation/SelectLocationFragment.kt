@@ -8,12 +8,13 @@ import android.view.*
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import android.annotation.SuppressLint
+import android.widget.ZoomControls
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -28,6 +29,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     // Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private lateinit var mapView: MapView
+    private lateinit var zoomControls: ZoomControls
     private lateinit var map: GoogleMap
 
 
@@ -40,6 +43,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
 
+        mapView = binding.mapView
+        mapView.onCreate(savedInstanceState)
+
+        zoomControls = binding.zoomControls
+
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
@@ -48,8 +56,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         //  add style to the map
         //  put a marker to location that the user selected
 
-        (binding.map as SupportMapFragment).getMapAsync(this)
-
+        mapView.getMapAsync(this)
 
         // TODO: call this function after the user confirms on the selected location
         // onLocationSelected()
@@ -58,17 +65,25 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     override fun onMapReady(p0: GoogleMap) {
         map = p0
-        setMapStyle(map)
-        setMapClick(map)
-        setMapPoiClick(map)
+        setMapStyle()
+        setMapClick()
+        setMapPoiClick()
+
+        zoomControls.setOnZoomInClickListener {
+            map.animateCamera(CameraUpdateFactory.zoomIn())
+        }
+        zoomControls.setOnZoomOutClickListener {
+            map.animateCamera(CameraUpdateFactory.zoomOut())
+        }
 
         moveToCurrentLocation()
     }
 
+
     /**
      * Set the style of the map with the map_style.json file in resources folder
      */
-    private fun setMapStyle(map: GoogleMap) {
+    private fun setMapStyle() {
         try {
             map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style))
         } catch (e: Resources.NotFoundException) {
@@ -81,18 +96,19 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     /**
      * Add a marker on the map when the user taps on and save the marker location
      */
-    private fun setMapClick(map: GoogleMap) {
-        // Remove all previous markers from the map
-        map.clear()
+    private fun setMapClick() {
 
         map.setOnMapClickListener {
+            // Remove previous markers from the map
+            map.clear()
+
+            // Add new marker
             val locationString = String.format(
                 Locale.getDefault(),
-                "Lat %1$.3f - Long %2$.3f",
+                "Lat %1$.3f, Long %2$.3f",
                 it.latitude,
                 it.longitude
             )
-
             map.addMarker(MarkerOptions().position(it).title(locationString))
 
             _viewModel.fillReminderLocationParameters(
@@ -100,15 +116,16 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             )
         }
     }
-
     /**
      * Add a marker to the selected POI and save its location
      */
-    private fun setMapPoiClick(map: GoogleMap) {
-        // Remove all previous markers from the app
-        map.clear()
+    private fun setMapPoiClick() {
 
         map.setOnPoiClickListener {
+            // Remove previous markers from the map
+            map.clear()
+
+            // Add new marker
             map.addMarker(MarkerOptions().position(it.latLng).title(it.name))
 
             _viewModel.fillReminderLocationParameters(
@@ -167,5 +184,30 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
 
         else -> super.onOptionsItemSelected(item)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mapView.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapView.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDestroy()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mapView.onSaveInstanceState(outState)
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView.onLowMemory()
     }
 }
