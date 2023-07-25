@@ -1,6 +1,6 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
-import android.content.pm.PackageManager
+
 import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
@@ -11,23 +11,10 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.content.IntentSender
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.snackbar.Snackbar
-import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
@@ -42,10 +29,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var map: GoogleMap
-
-    private val FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE = 1
-    private val ONLY_FOREGROUND_PERMISSION_REQUEST_CODE = 2
-    private val TURN_DEVICE_LOCATION_ON_REQUEST_CODE = 3
 
 
     override fun onCreateView(
@@ -79,7 +62,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setMapClick(map)
         setMapPoiClick(map)
 
-        enablePermissionsAndMoveToLocation()
+        moveToCurrentLocation()
     }
 
     /**
@@ -132,133 +115,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 it.name, it, it.latLng.latitude, it.latLng.longitude
             )
         }
-    }
-
-    /**
-     * Make the user enable foreground and background permission if not already granted
-     */
-    @SuppressLint("MissingPermission")
-    private fun enablePermissionsAndMoveToLocation() {
-        if (arePermissionsGranted()) {
-            checkDeviceLocationSettings()
-        } else {
-            var permissionArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-            val resultCode =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    permissionArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE
-                } else ONLY_FOREGROUND_PERMISSION_REQUEST_CODE
-            ActivityCompat.requestPermissions(
-                this.requireActivity().parent,
-                permissionArray,
-                resultCode
-            )
-        }
-    }
-
-    /**
-     * Check if foreground and background location permissions are granted
-     */
-    private fun arePermissionsGranted(): Boolean {
-        val foregroundPermissionApproved =
-            (PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ))
-        val backgroundPermissionApproved =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                )
-            } else true
-
-        return (foregroundPermissionApproved && backgroundPermissionApproved)
-    }
-
-    /**
-     * Handle the result of the permission request: if not granted, go to the settings activity
-     * and make the user grant them
-     */
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (grantResults.isEmpty() ||
-            grantResults[0] == PackageManager.PERMISSION_DENIED ||
-            requestCode == FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE &&
-            grantResults[1] == PackageManager.PERMISSION_DENIED
-        ) {
-
-            Snackbar.make(
-                binding.root,
-                R.string.permission_denied_explanation,
-                Snackbar.LENGTH_INDEFINITE
-            )
-                .setAction(R.string.settings) {
-                    startActivity(Intent().apply {
-                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    })
-                }
-                .show()
-        } else checkDeviceLocationSettings()
-    }
-
-    /**
-     * Check if the device location is turned on: if not, ask the user to turn it on
-     */
-    private fun checkDeviceLocationSettings(resolve: Boolean = true) {
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_LOW_POWER
-        }
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val settingsClient = LocationServices.getSettingsClient(requireContext())
-
-        val locationSettingsResponseTask = settingsClient.checkLocationSettings(builder.build())
-        locationSettingsResponseTask.addOnFailureListener {
-            if (it is ResolvableApiException && resolve) {
-                try {
-                    it.startResolutionForResult(
-                        requireActivity().parent,
-                        TURN_DEVICE_LOCATION_ON_REQUEST_CODE
-                    )
-                } catch (sendException: IntentSender.SendIntentException) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Error getting location settings resolution: ${sendException.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    R.string.location_required_error,
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction(android.R.string.ok) {
-                    checkDeviceLocationSettings()
-                }.show()
-            }
-        }
-        locationSettingsResponseTask.addOnCompleteListener {
-            if (it.isSuccessful) {
-                moveToCurrentLocation()
-            }
-        }
-    }
-
-    /**
-     * Handle the result of the turning-on location request: strongly suggest the user to turn
-     * the device location on
-     */
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == TURN_DEVICE_LOCATION_ON_REQUEST_CODE)
-            checkDeviceLocationSettings(false)
     }
 
     /**
