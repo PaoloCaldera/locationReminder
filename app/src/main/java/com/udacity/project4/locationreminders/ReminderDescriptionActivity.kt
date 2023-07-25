@@ -85,7 +85,7 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
         else {
             // In case of notification, no RemindersActivity
             val intent = Intent(this, RemindersActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         }
     }

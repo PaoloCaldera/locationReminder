@@ -1,18 +1,13 @@
 package com.udacity.project4.authentication
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ktx.Firebase
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.RemindersActivity
 
@@ -74,9 +69,7 @@ class AuthenticationActivity : AppCompatActivity() {
     }
 
     private fun exitLogin() {
-        val intent = Intent(this, RemindersActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(intent)
+        supportFragmentManager.popBackStack(RemindersActivity::class.java.name, 0)
     }
 
     companion object {
