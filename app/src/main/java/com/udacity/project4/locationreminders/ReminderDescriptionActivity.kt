@@ -61,7 +61,6 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("ClickableViewAccessibility")
     override fun onMapReady(p0: GoogleMap) {
         map = p0
-        mapView.setOnTouchListener { _, _ ->  true}
 
         val reminderMapLocation = LatLng(reminder.latitude!!, reminder.longitude!!)
 

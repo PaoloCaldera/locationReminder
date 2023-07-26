@@ -11,7 +11,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import android.annotation.SuppressLint
-import android.widget.ZoomControls
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapView
@@ -30,7 +29,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var mapView: MapView
-    private lateinit var zoomControls: ZoomControls
     private lateinit var map: GoogleMap
 
 
@@ -45,8 +43,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
-
-        zoomControls = binding.zoomControls
 
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
@@ -68,13 +64,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setMapStyle()
         setMapClick()
         setMapPoiClick()
-
-        zoomControls.setOnZoomInClickListener {
-            map.animateCamera(CameraUpdateFactory.zoomIn())
-        }
-        zoomControls.setOnZoomOutClickListener {
-            map.animateCamera(CameraUpdateFactory.zoomOut())
-        }
 
         moveToCurrentLocation()
     }

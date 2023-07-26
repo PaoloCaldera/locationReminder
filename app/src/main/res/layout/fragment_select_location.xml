@@ -23,16 +23,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ZoomControls
-            android:id="@+id/zoom_controls"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/margin_normal"
-            android:layout_marginBottom="@dimen/margin_normal"
-            app:layout_constraintBottom_toTopOf="@+id/saveLocation_button"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-
         <Button
             android:id="@+id/saveLocation_button"
             android:layout_width="match_parent"

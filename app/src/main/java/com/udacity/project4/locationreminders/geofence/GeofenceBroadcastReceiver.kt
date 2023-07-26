@@ -20,11 +20,17 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         // TODO: implement the onReceive method to receive the geofencing events at the background
+        Log.i("GeofenceBroadcastReceiver", "Receiver triggered")
+
         if (intent.action != SaveReminderFragment.ACTION_GEOFENCE_EVENT) {
             return
         }
 
+        Log.i("GeofenceBroadcastReceiver", "It is a geofence event")
+
         val geofencingEvent = GeofencingEvent.fromIntent(intent) ?: return
+
+        Log.i("GeofenceBroadcastReceiver", "Not null geofencing event")
 
         if (
             geofencingEvent.hasError() ||
@@ -34,6 +40,8 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Log.e("GeofenceBroadcastReceiver", "Incorrect geofencing event triggered")
             return
         }
+
+        Log.i("GeofenceBroadcastReceiver", "Checked geofence event: good")
 
         GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
     }

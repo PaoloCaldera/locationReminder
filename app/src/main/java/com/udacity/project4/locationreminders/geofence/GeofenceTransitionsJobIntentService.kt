@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders.geofence
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.JobIntentService
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
@@ -37,6 +38,8 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         // TODO: handle the geofencing transition events and
         //  send a notification to the user when he enters the geofence area
         // TODO call @sendNotification
+        Log.i("GeofenceTransitionsJobIntentService", "Work handled")
+
         sendNotification(GeofencingEvent.fromIntent(intent)!!.triggeringGeofences!!)
     }
 
@@ -44,12 +47,20 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
     private fun sendNotification(triggeringGeofences: List<Geofence>) {
         val requestId = triggeringGeofences[0].requestId
 
+        Log.i("GeofenceTransitionsJobIntentService", "Valid request id")
+
         //Get the local repository instance
         val remindersLocalRepository: ReminderDataSource by inject()
+
+        Log.i("GeofenceTransitionsJobIntentService", "Get the local repo instance")
+
 //        Interaction to the repository has to be through a coroutine scope
         CoroutineScope(coroutineContext).launch(SupervisorJob()) {
             //get the reminder with the request id
             val result = remindersLocalRepository.getReminder(requestId)
+
+            Log.i("GeofenceTransitionsJobIntentService", "Reminder retrieved")
+
             if (result is Result.Success<ReminderDTO>) {
                 val reminderDTO = result.data
                 //send a notification to the user with the reminder details
@@ -64,6 +75,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
                     )
                 )
             }
+            Log.i("GeofenceTransitionsJobIntentService", "Notification sent")
         }
     }
 }
