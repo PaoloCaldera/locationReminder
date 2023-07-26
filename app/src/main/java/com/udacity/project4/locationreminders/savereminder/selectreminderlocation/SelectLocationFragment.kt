@@ -1,9 +1,6 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
-
-import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.maps.GoogleMap
@@ -43,28 +40,22 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync(this)
 
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
-        //  add the map setup implementation
-        //  zoom to the user location after taking his permission
-        //  add style to the map
-        //  put a marker to location that the user selected
-
-        mapView.getMapAsync(this)
-
-        // TODO: call this function after the user confirms on the selected location
-        // onLocationSelected()
         return binding.root
     }
 
+
     override fun onMapReady(p0: GoogleMap) {
         map = p0
-        setMapStyle()
-        setMapClick()
-        setMapPoiClick()
+        setMapStyle()               // Style the map
+        setMapClick()               // Handle a generic click on the map
+        setMapPoiClick()            // Handle the click on a POI
 
+        // Move the device to the current location
         moveToCurrentLocation()
     }
 
@@ -73,13 +64,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
      * Set the style of the map with the map_style.json file in resources folder
      */
     private fun setMapStyle() {
-        try {
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style))
-        } catch (e: Resources.NotFoundException) {
-            Log.e("SelectLocationFragment", "Can't find style. Error: ${e.message}")
-        } catch (e: Exception) {
-            Log.e("SelectLocationFragment", "Cannot apply map style. Error: ${e.message}")
-        }
+        map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style))
     }
 
     /**
@@ -105,6 +90,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             )
         }
     }
+
     /**
      * Add a marker to the selected POI and save its location
      */
@@ -132,19 +118,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         LocationServices.getFusedLocationProviderClient(requireContext()).lastLocation
             .addOnSuccessListener {
                 if (it != null) {
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        LatLng(it.latitude, it.longitude), 18f
-                    ))
+                    map.moveCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(it.latitude, it.longitude), 18f
+                        )
+                    )
                 }
             }
     }
-
-    /*
-    private fun onLocationSelected() {
-        // TODO: When the user confirms on the selected location,
-        //  send back the selected location details to the view model
-        //  and navigate back to the previous fragment to save the reminder and add the geofence
-    } */
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_options, menu)

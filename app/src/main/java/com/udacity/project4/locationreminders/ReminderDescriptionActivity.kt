@@ -42,8 +42,8 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         val layoutId = R.layout.activity_reminder_description
         binding = DataBindingUtil.setContentView(this, layoutId)
-        // TODO: Add the implementation of the reminder details
 
+        // Retrieve the reminder data from the intent extras
         reminder = intent.getSerializableExtra(EXTRA_ReminderDataItem) as ReminderDataItem
 
         binding.apply {
@@ -51,6 +51,7 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
             reminderDataItem = reminder
         }
 
+        // Set the mapView
         mapView = binding.mapMarker
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
@@ -61,9 +62,9 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("ClickableViewAccessibility")
     override fun onMapReady(p0: GoogleMap) {
         map = p0
-
         val reminderMapLocation = LatLng(reminder.latitude!!, reminder.longitude!!)
 
+        // Move the map to focus on the exact reminder position
         map.addMarker(MarkerOptions().position(reminderMapLocation).title(reminder.description!!))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(reminderMapLocation, 15f))
     }
@@ -83,15 +84,19 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * When both up or back button are pressed, navigate to the RemindersActivity, by launching
+     * an already existing instance or creating a new one
+     */
     private fun navigateBackToRemindersList() {
         // Check if the main activity, RemindersActivity, is already present in the back stack
         val instance = supportFragmentManager.findFragmentByTag(RemindersActivity::class.java.name)
 
         if (instance != null && instance.isAdded)
-            // If an instance of RemindersActivity is found, go back by simply popping off this activity
+        // If an instance of RemindersActivity is found, go back by simply popping off this activity
             supportFragmentManager.popBackStack()
         else {
-            // In case of notification, no RemindersActivity
+            // In case of notification, start a new task with the RemindersActivity
             val intent = Intent(this, RemindersActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)

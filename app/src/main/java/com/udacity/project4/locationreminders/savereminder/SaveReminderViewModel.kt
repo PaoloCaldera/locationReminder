@@ -33,6 +33,9 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         longitude.value = null
     }
 
+    /**
+     * Populate the viewModel observable variables when the reminder location is selected
+     */
     fun fillReminderLocationParameters(
         locationString: String?,
         poi: PointOfInterest?,

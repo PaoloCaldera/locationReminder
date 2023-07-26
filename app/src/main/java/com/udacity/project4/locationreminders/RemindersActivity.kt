@@ -1,5 +1,7 @@
 package com.udacity.project4.locationreminders
 
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -7,6 +9,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityRemindersBinding
+import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 
 /**
  * The RemindersActivity that holds the reminders fragments
@@ -15,6 +18,20 @@ class RemindersActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRemindersBinding
     private lateinit var navController: NavController
+
+    // Pending intent used for the geofencing request, built here so that is available in all
+    // the associated fragments
+    val geofencePendingIntent: PendingIntent by lazy {
+        val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
+        intent.action = ACTION_GEOFENCE_EVENT
+        PendingIntent.getBroadcast(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +45,15 @@ class RemindersActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController)
     }
 
+    /**
+     * Let the navigation pattern handle the up navigation
+     */
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    companion object {
+        internal const val ACTION_GEOFENCE_EVENT =
+            "com.udacity.project4.intent.action.ACTION_GEOFENCE_EVENT"
     }
 }

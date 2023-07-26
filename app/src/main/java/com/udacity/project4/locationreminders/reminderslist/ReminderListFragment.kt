@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
@@ -27,6 +28,7 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
 import com.udacity.project4.locationreminders.ReminderDescriptionActivity
+import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -38,19 +40,24 @@ class ReminderListFragment : BaseFragment() {
     private lateinit var binding: FragmentRemindersBinding
     private var permissionsAndDeviceLocationEnabled: Boolean = false
 
+    private lateinit var geofencingClient: GeofencingClient
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(inflater,
+        binding = DataBindingUtil.inflate(
+            inflater,
             R.layout.fragment_reminders, container, false
         )
         binding.viewModel = _viewModel
 
         setHasOptionsMenu(true)
-        //setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
+
+        // Get the updated reminders list when refreshing
         binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
+
         return binding.root
     }
 
@@ -59,13 +66,13 @@ class ReminderListFragment : BaseFragment() {
         binding.lifecycleOwner = this
         setupRecyclerView()
         binding.addReminderFAB.setOnClickListener {
+            // Navigation is allowed only once permissions have been granted and device location is
+            // turned on
             if (permissionsAndDeviceLocationEnabled)
                 navigateToAddReminder()
             else
                 enablePermissionsAndDeviceLocation()
         }
-
-
 
         // Navigate to AuthenticationActivity if user is not logged-in
         if (FirebaseAuth.getInstance().currentUser == null) {
@@ -73,6 +80,8 @@ class ReminderListFragment : BaseFragment() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
+
+        geofencingClient = LocationServices.getGeofencingClient(requireContext())
     }
 
     override fun onStart() {
@@ -122,7 +131,7 @@ class ReminderListFragment : BaseFragment() {
                     permissionArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
                     FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE
                 } else ONLY_FOREGROUND_PERMISSION_REQUEST_CODE
-            requestPermissions(permissionArray,resultCode)
+            requestPermissions(permissionArray, resultCode)
         }
     }
 
@@ -241,8 +250,16 @@ class ReminderListFragment : BaseFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.clear -> {
+                // When clearing the list, remove all the reminders from the local db but also
+                // all the pending geofencing requests
+                _viewModel.clearReminderList()
+                geofencingClient.removeGeofences(
+                    (activity as RemindersActivity).geofencePendingIntent
+                )
+            }
             R.id.logout -> {
-                // TODO: add the logout implementation
+                // User logout implementation
                 AuthUI.getInstance().signOut(requireContext())
                 startActivity(Intent(this.activity, AuthenticationActivity::class.java))
             }

@@ -6,7 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
-import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
+import com.udacity.project4.locationreminders.RemindersActivity
 
 /**
  * Triggered by the Geofence.  Since we can have many Geofences at once, we pull the request
@@ -19,19 +19,15 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
  */
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        // TODO: implement the onReceive method to receive the geofencing events at the background
-        Log.i("GeofenceBroadcastReceiver", "Receiver triggered")
-
-        if (intent.action != SaveReminderFragment.ACTION_GEOFENCE_EVENT) {
+        // Check that the intent action is actually that of a geofence event
+        if (intent.action != RemindersActivity.ACTION_GEOFENCE_EVENT) {
             return
         }
 
-        Log.i("GeofenceBroadcastReceiver", "It is a geofence event")
-
+        // Return if the retrieved geofencing event is null
         val geofencingEvent = GeofencingEvent.fromIntent(intent) ?: return
 
-        Log.i("GeofenceBroadcastReceiver", "Not null geofencing event")
-
+        // Check the goodness of the geofencing event
         if (
             geofencingEvent.hasError() ||
             geofencingEvent.geofenceTransition != Geofence.GEOFENCE_TRANSITION_ENTER ||
@@ -41,8 +37,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             return
         }
 
-        Log.i("GeofenceBroadcastReceiver", "Checked geofence event: good")
-
+        // If the geofencing event has been successfully checked, enqueue the work
         GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
     }
 }
