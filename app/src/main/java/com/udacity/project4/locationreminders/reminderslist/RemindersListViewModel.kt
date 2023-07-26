@@ -42,6 +42,7 @@ class RemindersListViewModel(
                     })
                     remindersList.value = dataList
                 }
+
                 is Result.Error ->
                     showSnackBar.value = result.message
             }
@@ -56,5 +57,14 @@ class RemindersListViewModel(
      */
     private fun invalidateShowNoData() {
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
+    }
+
+    /**
+     * Delete all reminders when pressing the menu button
+     */
+    fun clearReminderList() {
+        viewModelScope.launch {
+            dataSource.deleteAllReminders()
+        }
     }
 }

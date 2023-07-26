@@ -14,12 +14,12 @@ import kotlinx.coroutines.launch
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
     BaseViewModel(app) {
-    val reminderTitle = MutableLiveData<String>()
-    val reminderDescription = MutableLiveData<String>()
-    val reminderSelectedLocationStr = MutableLiveData<String>()
-    val selectedPOI = MutableLiveData<PointOfInterest>()
-    val latitude = MutableLiveData<Double>()
-    val longitude = MutableLiveData<Double>()
+    val reminderTitle = MutableLiveData<String?>()
+    val reminderDescription = MutableLiveData<String?>()
+    val reminderSelectedLocationStr = MutableLiveData<String?>()
+    val selectedPOI = MutableLiveData<PointOfInterest?>()
+    val latitude = MutableLiveData<Double?>()
+    val longitude = MutableLiveData<Double?>()
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
@@ -31,6 +31,21 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         selectedPOI.value = null
         latitude.value = null
         longitude.value = null
+    }
+
+    /**
+     * Populate the viewModel observable variables when the reminder location is selected
+     */
+    fun fillReminderLocationParameters(
+        locationString: String?,
+        poi: PointOfInterest?,
+        lat: Double?,
+        long: Double?
+    ) {
+        reminderSelectedLocationStr.value = locationString
+        selectedPOI.value = poi
+        latitude.value = lat
+        longitude.value = long
     }
 
     /**
@@ -78,5 +93,12 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             return false
         }
         return true
+    }
+
+    /**
+     * On location selected, go back to the SaveReminderFragment
+     */
+    fun backToPreviousFragment() {
+        navigationCommand.value = NavigationCommand.Back
     }
 }
