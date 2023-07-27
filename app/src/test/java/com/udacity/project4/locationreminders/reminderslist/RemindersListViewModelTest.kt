@@ -73,6 +73,7 @@ class RemindersListViewModelTest {
 
         // THEN: test that the LiveData value is updated
         assertThat(viewModel.remindersList.getOrAwaitValue(), `is`(remindersList))
+        assertThat(viewModel.showNoData.value, `is`(false))
     }
 
     @Test
@@ -88,8 +89,9 @@ class RemindersListViewModelTest {
         // WHEN: LiveData is refreshed
         viewModel.loadReminders()
 
-        // THEN: the LiveData value is an empty list
+        // THEN: the LiveData list value is an empty list and showNoData is true
         assertThat(viewModel.remindersList.getOrAwaitValue(), `is`(listOf()))
+        assertThat(viewModel.showNoData.value, `is`(true))
     }
 
     private fun fromReminderToReminderDTO(r: ReminderDataItem) : ReminderDTO {
