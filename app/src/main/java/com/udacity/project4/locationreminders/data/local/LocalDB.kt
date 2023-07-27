@@ -11,10 +11,10 @@ object LocalDB {
     /**
      * Static method that creates a reminder class and returns the DAO of the reminder
      */
-    fun createRemindersDao(context: Context): RemindersDao {
+    /*fun createRemindersDao(context: Context): RemindersDao {
         return Room.databaseBuilder(
             context.applicationContext,
             RemindersDatabase::class.java, "locationReminders.db"
         ).build().reminderDao()
-    }
+    }*/
 }

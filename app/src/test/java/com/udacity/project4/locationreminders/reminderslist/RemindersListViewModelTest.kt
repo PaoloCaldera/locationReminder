@@ -11,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -53,6 +54,11 @@ class RemindersListViewModelTest {
         dataSource = FakeDataSource(remindersListDTO)
         viewModel =
             RemindersListViewModel(ApplicationProvider.getApplicationContext(), dataSource)
+    }
+
+    @After
+    fun reset() {
+        dataSource = FakeDataSource()
     }
 
     @Test
