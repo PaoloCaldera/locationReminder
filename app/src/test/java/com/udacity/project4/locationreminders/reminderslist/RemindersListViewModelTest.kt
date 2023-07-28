@@ -4,18 +4,21 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.stopKoin
 
 @RunWith(AndroidJUnit4::class)
 @ExperimentalCoroutinesApi
@@ -24,102 +27,107 @@ class RemindersListViewModelTest {
     //TODO: provide testing to the RemindersListViewModel and its live data objects
 
     @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
+    @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
+
 
     private lateinit var dataSource: FakeDataSource
     private lateinit var viewModel: RemindersListViewModel
 
-    private val remindersList = mutableListOf(
-        ReminderDataItem(
-            title = "Apples",
-            description = "Remember to buy apples",
-            location = "Esselunga",
-            latitude = 45.56251607979835,
-            longitude = 9.080693912097328
-        ),
-        ReminderDataItem(
-            title = "Centre Court",
-            description = "Remember to visit the centre court",
-            location = "Esselunga",
-            latitude = 51.433777128124554,
-            longitude = -0.21440856010107215
-        )
-    )
-    private val remindersListDTO = mutableListOf<ReminderDTO>()
 
     @Before
     fun setup() {
-        for (item in remindersList) { remindersListDTO.add(fromReminderToReminderDTO(item)) }
-
-        dataSource = FakeDataSource(remindersListDTO)
+        dataSource = FakeDataSource()
         viewModel =
             RemindersListViewModel(ApplicationProvider.getApplicationContext(), dataSource)
     }
 
     @After
     fun reset() {
-        dataSource = FakeDataSource()
+        stopKoin()
     }
 
     @Test
-    fun loadReminders_addReminder_listRefreshed() = runTest {
-        // GIVEN: a new reminder is saved into the data source
-        val newReminder = ReminderDataItem(
-            title = "Gold Mary",
-            description = "Look at the gold holy Mary",
-            location = "Duomo di Milano",
-            latitude = 45.46424806555846,
-            longitude = 9.1919264967501
+    fun loadReminders_initialEntries_listRefreshed() = mainCoroutineRule.runBlockingTest {
+        // GIVEN: the data source has already two reminder entries
+        val reminder1 = ReminderDTO(
+            title = "Apples",
+            description = "Remember to buy apples",
+            location = "Esselunga",
+            latitude = 45.56251607979835,
+            longitude = 9.080693912097328
         )
-        remindersList.add(newReminder)
-        dataSource.saveReminder(fromReminderToReminderDTO(newReminder))
+        dataSource.saveReminder(reminder1)
+        val reminder2 = ReminderDTO(
+            title = "Centre Court",
+            description = "Remember to visit the centre court",
+            location = "Wimbledon Centre Court",
+            latitude = 51.433777128124554,
+            longitude = -0.21440856010107215
+        )
+        dataSource.saveReminder(reminder2)
 
-        // WHEN: retrieving all the reminders
+        // WHEN: all the reminders are retrieved with the viewModel function
         viewModel.loadReminders()
+        val list = viewModel.remindersList.getOrAwaitValue()
 
-        // THEN: test that the LiveData value is updated
-        assertThat(viewModel.remindersList.getOrAwaitValue(), `is`(remindersList))
+        // THEN: test that the LiveData value contains that exists in the data source
+        assertThat(list, notNullValue())
+        // First list item
+        val listItem1 = list.find { it.id == reminder1.id }!!
+        assertThat(listItem1.title, `is`(reminder1.title))
+        assertThat(listItem1.description, `is`(reminder1.description))
+        assertThat(listItem1.location, `is`(reminder1.location))
+        assertThat(listItem1.latitude, `is`(reminder1.latitude))
+        assertThat(listItem1.longitude, `is`(reminder1.longitude))
+        // Second list item
+        val listItem2 = list.find { it.id == reminder2.id }!!
+        assertThat(listItem2.title, `is`(reminder2.title))
+        assertThat(listItem2.description, `is`(reminder2.description))
+        assertThat(listItem2.location, `is`(reminder2.location))
+        assertThat(listItem2.latitude, `is`(reminder2.latitude))
+        assertThat(listItem2.longitude, `is`(reminder2.longitude))
+        // ShowNoData LiveData variable must be false
         assertThat(viewModel.showNoData.value, `is`(false))
     }
 
     @Test
-    fun clearReminderList_remindersList_toEmptyList() = runTest {
-        // GIVEN: from a populated list of reminders
+    fun clearReminderList_remindersList_toEmptyList() = mainCoroutineRule.runBlockingTest {
+        // GIVEN: the data source has already two reminder entries
+        val reminder1 = ReminderDTO(
+            title = "Apples",
+            description = "Remember to buy apples",
+            location = "Esselunga",
+            latitude = 45.56251607979835,
+            longitude = 9.080693912097328
+        )
+        dataSource.saveReminder(reminder1)
+        val reminder2 = ReminderDTO(
+            title = "Centre Court",
+            description = "Remember to visit the centre court",
+            location = "Wimbledon Centre Court",
+            latitude = 51.433777128124554,
+            longitude = -0.21440856010107215
+        )
+        dataSource.saveReminder(reminder2)
+        viewModel.loadReminders()
 
-        // WHEN: reminders list is cleared
+        // WHEN: the not empty reminders list is cleared
         viewModel.clearRemindersList()
 
         // THEN: the data source is an empty list
-        assertThat(dataSource.getReminders(), `is`(Result.Success(mutableListOf())))
+        val clearedList = dataSource.getReminders()
+        assertThat(clearedList, notNullValue())
+        clearedList as Result.Success
+        assertThat(clearedList.data, `is`(listOf()))
 
-        // WHEN: LiveData is refreshed
+        // WHEN: refresh again the LiveData after clearing the list
         viewModel.loadReminders()
 
-        // THEN: the LiveData list value is an empty list and showNoData is true
+        // THEN: list in the viewModel is an empty list and the showNoData LiveData variable is true
         assertThat(viewModel.remindersList.getOrAwaitValue(), `is`(listOf()))
         assertThat(viewModel.showNoData.value, `is`(true))
     }
-
-    private fun fromReminderToReminderDTO(r: ReminderDataItem) : ReminderDTO {
-        return ReminderDTO(
-            title = r.title,
-            description = r.description,
-            location = r.location,
-            latitude = r.latitude,
-            longitude = r.longitude,
-            id = r.id
-        )
-    }
-
-    private fun fromReminderDTOToReminder(rdto: ReminderDTO): ReminderDataItem {
-        return ReminderDataItem(
-            title = rdto.title,
-            description = rdto.description,
-            location = rdto.location,
-            latitude = rdto.latitude,
-            longitude = rdto.longitude,
-            id = rdto.id
-        )
-    }
-
 }

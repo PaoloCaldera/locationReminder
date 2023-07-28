@@ -8,6 +8,7 @@ import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.base.NavigationCommand
+import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
@@ -17,55 +18,45 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.nullValue
 import kotlinx.coroutines.test.runTest
+import org.hamcrest.Matchers.notNullValue
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.stopKoin
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class SaveReminderViewModelTest {
 
-    //TODO: provide testing to the SaveReminderView and its live data objects
+    @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
+
 
     private lateinit var dataSource: FakeDataSource
     private lateinit var viewModel: SaveReminderViewModel
 
-    private val remindersList = mutableListOf(
-        ReminderDataItem(
-            title = "Apples",
-            description = "Remember to buy apples",
-            location = "Esselunga",
-            latitude = 45.56251607979835,
-            longitude = 9.080693912097328
-        ),
-        ReminderDataItem(
-            title = "Centre Court",
-            description = "Remember to visit the centre court",
-            location = "Esselunga",
-            latitude = 51.433777128124554,
-            longitude = -0.21440856010107215
-        )
-    )
-    private val remindersListDTO = mutableListOf<ReminderDTO>()
 
     @Before
     fun setup() {
-        for (item in remindersList) {
-            remindersListDTO.add(fromReminderToReminderDTO(item))
-        }
-
-        dataSource = FakeDataSource(remindersListDTO)
+        dataSource = FakeDataSource()
         viewModel =
             SaveReminderViewModel(ApplicationProvider.getApplicationContext(), dataSource)
+    }
+
+    @After
+    fun reset() {
+        stopKoin()
     }
 
 
     @Test
     fun onClear_clearLiveData_nullLiveData() {
-        // GIVEN: LiveData variables having a value
+        // GIVEN: situation where all LiveData variables have a value
         viewModel.reminderTitle.value = "Gold Mary"
         viewModel.reminderDescription.value = "Look at the gold holy Mary"
         viewModel.reminderSelectedLocationStr.value = "Duomo di Milano"
@@ -78,7 +69,7 @@ class SaveReminderViewModelTest {
         viewModel.latitude.value = 45.46424806555846
         viewModel.longitude.value = 9.1919264967501
 
-        // WHEN: calling the function to make all the entries empty
+        // WHEN: call the function to make all the LiveData entries empty
         viewModel.onClear()
 
         // THEN: check that LiveData variables are actually null
@@ -89,7 +80,6 @@ class SaveReminderViewModelTest {
         assertThat(viewModel.latitude.getOrAwaitValue(), nullValue())
         assertThat(viewModel.longitude.getOrAwaitValue(), nullValue())
     }
-
 
     @Test
     fun fillReminderLocationParameters_locationEntries_populatedLiveData() {
@@ -113,7 +103,27 @@ class SaveReminderViewModelTest {
 
     @Test
     fun validateAndSaveReminder_reminderEntry_savedOnLocalDataSource() = runTest {
-        // GIVEN: reminder entry with all the LiveData initialized
+        // GIVEN: the data source has already two reminder entries
+        val reminder1 = ReminderDTO(
+            title = "Apples",
+            description = "Remember to buy apples",
+            location = "Esselunga",
+            latitude = 45.56251607979835,
+            longitude = 9.080693912097328
+        )
+        dataSource.saveReminder(reminder1)
+
+        val reminder2 = ReminderDTO(
+            title = "Centre Court",
+            description = "Remember to visit the centre court",
+            location = "Wimbledon Centre Court",
+            latitude = 51.433777128124554,
+            longitude = -0.21440856010107215
+        )
+        dataSource.saveReminder(reminder2)
+
+
+        // WHEN: a reminder is entered and saved into the data source with the viewModel function
         val newReminder = ReminderDataItem(
             title = "Gold Mary",
             description = "Look at the gold holy Mary",
@@ -121,32 +131,20 @@ class SaveReminderViewModelTest {
             latitude = 45.46424806555846,
             longitude = 9.1919264967501
         )
-
-        // WHEN: save the reminder entry into the local data source
         viewModel.validateAndSaveReminder(newReminder)
+        val loaded = dataSource.getReminder(newReminder.id)
 
-        // THEN: check that the reminder has been saved into the repo
-        assertThat(
-            dataSource.getReminder(newReminder.id),
-            `is`(Result.Success(fromReminderToReminderDTO(newReminder)))
-        )
-        assertThat(
-            viewModel.showToast.getOrAwaitValue(),
-            `is`(viewModel.app.getString(R.string.reminder_saved))
-        )
+        // THEN: check that the reminder has been saved into the data source
+        assertThat(loaded, notNullValue())
+        loaded as Result.Success
+        assertThat(loaded.data.title, `is`(newReminder.title))
+        assertThat(loaded.data.description, `is`(newReminder.description))
+        assertThat(loaded.data.location, `is`(newReminder.location))
+        assertThat(loaded.data.latitude, `is`(newReminder.latitude))
+        assertThat(loaded.data.longitude, `is`(newReminder.longitude))
+
+        // THEN: check also the values of the LiveData variables
+        assertThat(viewModel.showToast.getOrAwaitValue(), `is`(viewModel.app.getString(R.string.reminder_saved)))
         assertThat(viewModel.navigationCommand.getOrAwaitValue(), `is`(NavigationCommand.Back))
     }
-
-
-    private fun fromReminderToReminderDTO(r: ReminderDataItem): ReminderDTO {
-        return ReminderDTO(
-            title = r.title,
-            description = r.description,
-            location = r.location,
-            latitude = r.latitude,
-            longitude = r.longitude,
-            id = r.id
-        )
-    }
-
 }
