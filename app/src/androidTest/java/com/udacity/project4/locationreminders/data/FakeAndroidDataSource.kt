@@ -3,8 +3,7 @@ package com.udacity.project4.locationreminders.data
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 
-//Use FakeDataSource that acts as a test double to the LocalDataSource
-class FakeDataSource(private var reminders: MutableList<ReminderDTO>? = mutableListOf()) :
+class FakeAndroidDataSource(private var reminders: MutableList<ReminderDTO>? = mutableListOf()) :
     ReminderDataSource {
 
     // Provide a fake error to test the failure case
@@ -13,7 +12,6 @@ class FakeDataSource(private var reminders: MutableList<ReminderDTO>? = mutableL
     fun setReturnError(value: Boolean) {
         shouldReturnError = value
     }
-
 
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
         if (shouldReturnError)
@@ -41,6 +39,4 @@ class FakeDataSource(private var reminders: MutableList<ReminderDTO>? = mutableL
     override suspend fun deleteAllReminders() {
         reminders?.clear()
     }
-
-
 }

@@ -1,9 +1,11 @@
 package com.udacity.project4.locationreminders
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -90,17 +92,21 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     private fun navigateBackToRemindersList() {
         // Check if the main activity, RemindersActivity, is already present in the back stack
-        val instance = supportFragmentManager.findFragmentByTag(RemindersActivity::class.java.name)
-
-        if (instance != null && instance.isAdded)
-        // If an instance of RemindersActivity is found, go back by simply popping off this activity
-            supportFragmentManager.popBackStack()
-        else {
-            // In case of notification, start a new task with the RemindersActivity
-            val intent = Intent(this, RemindersActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val taskList = activityManager.getRunningTasks(Int.MAX_VALUE)
+        for (task in taskList) {
+            if (task.baseActivity?.className == RemindersActivity::class.java.name) {
+                // Instance found: go back by simply popping off this activity
+                finish()
+                return
+            }
         }
+
+        // No instance found: start RemindersActivity and finish the current one
+        val intent = Intent(this, RemindersActivity::class.java)
+        Log.i("ReminderDescriptionActivity", "RemindersActivity not found in the back stack")
+        startActivity(intent)
+        finish()
     }
 
     override fun onResume() {

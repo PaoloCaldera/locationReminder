@@ -62,7 +62,7 @@ class RemindersListViewModel(
     /**
      * Delete all reminders when pressing the menu button
      */
-    fun clearReminderList() {
+    fun clearRemindersList() {
         viewModelScope.launch {
             dataSource.deleteAllReminders()
         }

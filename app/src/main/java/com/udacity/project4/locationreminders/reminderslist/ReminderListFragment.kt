@@ -253,7 +253,7 @@ class ReminderListFragment : BaseFragment() {
             R.id.clear -> {
                 // When clearing the list, remove all the reminders from the local db but also
                 // all the pending geofencing requests
-                _viewModel.clearReminderList()
+                _viewModel.clearRemindersList()
                 geofencingClient.removeGeofences(
                     (activity as RemindersActivity).geofencePendingIntent
                 )
