@@ -8,6 +8,7 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -33,10 +34,6 @@ import org.mockito.Mockito.verify
 //UI Testing
 @MediumTest
 class ReminderListFragmentTest {
-
-//    TODO: test the navigation of the fragments.
-//    TODO: test the displayed data on the UI.
-//    TODO: add testing for the error messages.
 
     private val appContext = InstrumentationRegistry.getInstrumentation().targetContext
 
@@ -94,6 +91,19 @@ class ReminderListFragmentTest {
         onView(withId(R.id.noDataTextView))
             .check(matches(withText(appContext.getString(R.string.no_data))))
 
+    }
+
+    @Test
+    fun reminderListFragment_shouldReturnError() {
+        // GIVEN: set the repository so that it returns a fake error
+        repository.setReturnError(true)
+
+        // WHEN: launch ReminderListFragment to display the list of reminders
+        launchFragmentInContainer<ReminderListFragment>(themeResId = R.style.AppTheme)
+
+        // THEN: assert that the LiveData variable for displaying an error contains the error message
+        onView(withText("TestException"))
+            .check(matches(isDisplayed()))
     }
 
     @Test
