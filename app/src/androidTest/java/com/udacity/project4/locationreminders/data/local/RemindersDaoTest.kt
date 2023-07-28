@@ -43,7 +43,7 @@ class RemindersDaoTest {
 
 
     @Test
-    fun saveTask_retrieveTask_matchingProperties() = runTest {
+    fun saveReminder_retrieveReminder_matchingProperties() = runTest {
         // GIVEN: save a reminder into the database
         val saved = ReminderDTO(
             title = "Apples",
@@ -63,7 +63,7 @@ class RemindersDaoTest {
     }
 
     @Test
-    fun saveTask_updateTask_matchingProperties() = runTest {
+    fun saveReminder_clearAll_nullList() = runTest {
         // GIVEN: save a reminder into the database
         val saved = ReminderDTO(
             title = "Apples",
