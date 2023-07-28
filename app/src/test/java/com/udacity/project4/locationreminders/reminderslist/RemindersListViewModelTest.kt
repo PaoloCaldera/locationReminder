@@ -9,6 +9,8 @@ import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.pauseDispatcher
+import kotlinx.coroutines.test.resumeDispatcher
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
@@ -129,5 +131,35 @@ class RemindersListViewModelTest {
         // THEN: list in the viewModel is an empty list and the showNoData LiveData variable is true
         assertThat(viewModel.remindersList.getOrAwaitValue(), `is`(listOf()))
         assertThat(viewModel.showNoData.value, `is`(true))
+    }
+
+    @Test
+    fun loadReminders_check_loading() = mainCoroutineRule.runBlockingTest {
+        // GIVEN: pause the coroutine dispatcher so that the initial value of showLoading can be tested
+        mainCoroutineRule.pauseDispatcher()
+
+        // WHEN: the function for loading reminders is called
+        viewModel.loadReminders()
+
+        // THEN: before executing the coroutine, the application is displaying the loading
+        assertThat(viewModel.showLoading.getOrAwaitValue(), `is`(true))
+
+        // WHEN: resume the dispatcher so that the coroutine is executed
+        mainCoroutineRule.resumeDispatcher()
+
+        // THEN: the loading is not displayed anymore when the coroutine has finished
+        assertThat(viewModel.showLoading.getOrAwaitValue(), `is`(false))
+    }
+
+    @Test
+    fun loadReminders_shouldReturnError() = mainCoroutineRule.runBlockingTest {
+        // GIVEN: set the repository so that it returns a fake error
+        dataSource.setReturnError(true)
+
+        // WHEN: load all the reminders with the viewModel function
+        viewModel.loadReminders()
+
+        // THEN: assert that the LiveData variable for displaying an error contains the error message
+        assertThat(viewModel.showSnackBar.getOrAwaitValue(), `is`("TestException"))
     }
 }
