@@ -98,13 +98,13 @@ class RemindersActivityTest :
     private val dataBindingIdlingResource = DataBindingIdlingResource()
 
     @Before
-    fun registerIdlingResources () {
+    fun registerIdlingResources() {
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
         IdlingRegistry.getInstance().register(dataBindingIdlingResource)
     }
 
     @After
-    fun unregisterIdlingResources () {
+    fun unregisterIdlingResources() {
         IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
         IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
     }

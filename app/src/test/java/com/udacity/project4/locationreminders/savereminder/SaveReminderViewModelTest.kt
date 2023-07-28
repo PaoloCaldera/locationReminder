@@ -144,7 +144,10 @@ class SaveReminderViewModelTest {
         assertThat(loaded.data.longitude, `is`(newReminder.longitude))
 
         // THEN: check also the values of the LiveData variables
-        assertThat(viewModel.showToast.getOrAwaitValue(), `is`(viewModel.app.getString(R.string.reminder_saved)))
+        assertThat(
+            viewModel.showToast.getOrAwaitValue(),
+            `is`(viewModel.app.getString(R.string.reminder_saved))
+        )
         assertThat(viewModel.navigationCommand.getOrAwaitValue(), `is`(NavigationCommand.Back))
     }
 }
