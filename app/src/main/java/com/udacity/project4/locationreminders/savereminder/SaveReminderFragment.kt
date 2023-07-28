@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders.savereminder
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,22 +58,12 @@ class SaveReminderFragment : BaseFragment() {
             val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
-            if (title.isNullOrEmpty() || description.isNullOrEmpty() || location.isNullOrEmpty() ||
-                latitude == null || longitude == null
-            ) {
-                Toast.makeText(
-                    requireContext(),
-                    "Fill all the entries before saving",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                // Create a reminder with the selected parameters
-                val reminder = ReminderDataItem(title, description, location, latitude, longitude)
+            val reminder = ReminderDataItem(title, description, location, latitude, longitude)
 
-                // Add a geofence associated to the reminder
+            if (_viewModel.validateAndSaveReminder(reminder))
+                // Add a geofence associated to the reminder if the reminder is filled correctly
                 // Give to the geofence request the same id of the reminder
                 addReminderGeofence(reminder)
-            }
         }
 
         geofencingClient = LocationServices.getGeofencingClient(requireContext())
@@ -104,13 +95,12 @@ class SaveReminderFragment : BaseFragment() {
             (activity as RemindersActivity).geofencePendingIntent
         ).run {
             addOnSuccessListener {
-                // Save the reminder to the local db
-                _viewModel.validateAndSaveReminder(reminder)
+                Log.i("SaveReminderFragment", "Successful geofencing request: geofence added to the map")
             }
             addOnFailureListener {
                 Toast.makeText(
                     requireContext(),
-                    "Geofence adding request failed: ${it.message}",
+                    "Failed geofencing request: ${it.message}",
                     Toast.LENGTH_SHORT
                 ).show()
             }
