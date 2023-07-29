@@ -1,8 +1,10 @@
 package com.udacity.project4.locationreminders.reminderslist
 
+import android.content.Context
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -14,10 +16,11 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import androidx.test.platform.app.InstrumentationRegistry
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.FakeAndroidDataSource
+import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.ServiceLocator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -26,6 +29,11 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 
@@ -35,14 +43,41 @@ import org.mockito.Mockito.verify
 @MediumTest
 class ReminderListFragmentTest {
 
-    private val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-
+    private lateinit var appContext: Context
     private lateinit var repository: FakeAndroidDataSource
 
     @Before
     fun setup() {
+        //stop the original app koin
+        stopKoin()
+
+        appContext = ApplicationProvider.getApplicationContext()
         repository = FakeAndroidDataSource()
         ServiceLocator.repository = repository
+
+        val myModule = module {
+            viewModel {
+                RemindersListViewModel(
+                    get(),
+                    get() as ReminderDataSource
+                )
+            }
+            //Declare singleton definitions to be later injected using by inject()
+            single {
+                //This view model is declared singleton to be used across multiple fragments
+                SaveReminderViewModel(
+                    get(),
+                    get() as ReminderDataSource
+                )
+            }
+            single { ServiceLocator.getRepository(appContext) }
+        }
+
+        //declare a new koin module
+        startKoin {
+            androidContext(appContext)
+            modules(listOf(myModule))
+        }
     }
 
     @After
