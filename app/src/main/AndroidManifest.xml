@@ -50,6 +50,10 @@
 
         <activity
             android:name=".authentication.AuthenticationActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".locationreminders.RemindersActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,14 +61,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".locationreminders.RemindersActivity" />
-
-    <receiver
-        android:name=".locationreminders.geofence.GeofenceBroadcastReceiver"
-        android:enabled="true"
-        android:exported="true" />
-    <service
-        android:name=".locationreminders.geofence.GeofenceTransitionsJobIntentService"
-        android:exported="true"
-        android:permission="android.permission.BIND_JOB_SERVICE" />
-</application></manifest>
+        <receiver
+            android:name=".locationreminders.geofence.GeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".locationreminders.geofence.GeofenceTransitionsJobIntentService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+    </application>
+</manifest>

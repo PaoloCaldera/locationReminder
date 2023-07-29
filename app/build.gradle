@@ -52,6 +52,7 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:$swipeRefreshVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintVersion"
+    implementation "com.android.support:design:$supportDesignVersion"
 
     // Architecture Components & Navigation dependencies
     implementation "androidx.lifecycle:lifecycle-extensions:$archLifecycleVersion"
