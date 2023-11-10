@@ -24,7 +24,7 @@ Before running the application, two more steps need to be performed:
 * Create a Firebase project, then add the Email/Password and Google authentication methods according to the [Firebase](https://firebase.google.com/docs/auth/android/firebaseui) instructions
 To retrieve the SHA-1 of the application, which is going to be used both for creating the API key and the authentication methods, execute in the Android Studio terminal the following line:
 ```
-$ keytool -list -v -alias androiddebugkey -keystore C:\Users\paolo\.android\debug.keystore
+$ keytool -list -v -alias androiddebugkey -keystore <USER_FOLDER>\.android\debug.keystore
 ```
 
 Then, run the application on an Android device or emulator. The application is compiled with API 33, thus use a device or emulator supporting such API version.
@@ -33,4 +33,4 @@ For complete usage of the application, be sure that the device or emulator is co
 
 ## License
 
-Loading Status is a public project that can be downloaded and modified under the terms and conditions of the [MIT License]().
+Loading Status is a public project that can be downloaded and modified under the terms and conditions of the [MIT License](LICENSE).
