@@ -22,6 +22,7 @@ or the `Get from VCS` option inside Android Studio by copying the link above.
 Before running the application, two more steps need to be performed:
 * Create a Google Cloud project and add an API key to use the Google Maps API, following the [Google](https://developers.google.com/maps/documentation/android-sdk/get-api-key) indications
 * Create a Firebase project, then add the Email/Password and Google authentication methods according to the [Firebase](https://firebase.google.com/docs/auth/android/firebaseui) instructions
+
 To retrieve the SHA-1 of the application, which is going to be used both for creating the API key and the authentication methods, execute in the Android Studio terminal the following line:
 ```
 $ keytool -list -v -alias androiddebugkey -keystore <USER_FOLDER>\.android\debug.keystore
