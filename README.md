@@ -7,7 +7,7 @@ The project demonstrates the ability to exploit the components already seen in t
 * [Broadcast Receivers](https://developer.android.com/guide/components/broadcasts), to handle the notification click
 * [Testing](https://developer.android.com/training/testing), to create methods for testing the actual application, both for unit testing and UI testing
 
-The project consists of three screens that constitute the main app navigation and of an additional screen, opened when the user clicks the incoming notification.
+The project consists of three screens that constitute the main app navigation and of an additional screen, opened when the user clicks the incoming notification. Actually, there are also the screens dedicated to the login process, which is required to use the app.
 
 Visit the [Wiki](https://github.com/PaoloCaldera/llocationReminder/wiki) to see the application screens.
 
